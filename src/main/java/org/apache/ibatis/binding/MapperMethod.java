@@ -39,6 +39,9 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ *
+ * 封装Mapper方法调用逻辑
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
@@ -58,7 +61,10 @@ public class MapperMethod {
     Object result;
     switch (command.getType()) {
       case INSERT: {
+        // 转换参数 TODO ??
         Object param = method.convertArgsToSqlCommandParam(args);
+        // 调用insert方法，最终使用executor根据MapperStatement进行执行
+        // 最后根据方法返回值类型，封装返回值
         result = rowCountResult(sqlSession.insert(command.getName(), param));
         break;
       }
@@ -141,7 +147,9 @@ public class MapperMethod {
     List<E> result;
     Object param = method.convertArgsToSqlCommandParam(args);
     if (method.hasRowBounds()) {
+      // 取分页参数
       RowBounds rowBounds = method.extractRowBounds(args);
+      // 查询处理
       result = sqlSession.selectList(command.getName(), param, rowBounds);
     } else {
       result = sqlSession.selectList(command.getName(), param);
@@ -300,11 +308,18 @@ public class MapperMethod {
       this.returnsOptional = Optional.class.equals(this.returnType);
       this.mapKey = getMapKey(method);
       this.returnsMap = this.mapKey != null;
+      // 这里说明可以增加一个RowBounds参数作为分页参数
       this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);
+      // 这里说明可以增加一个ResultHandler参数作为返回值处理参数
       this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }
 
+    /**
+     * TODO 这个方法需要看一下怎么做的
+     * @param args
+     * @return
+     */
     public Object convertArgsToSqlCommandParam(Object[] args) {
       return paramNameResolver.getNamedParams(args);
     }

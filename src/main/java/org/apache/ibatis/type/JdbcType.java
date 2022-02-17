@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 当插入空值时，需要配置jdbctype
+ *
  * @author Clinton Begin
  */
 public enum JdbcType {

@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 有大小限制，当到了最大数量之后，再放的时候，移除的规则是先进先出
  * FIFO (first in, first out) cache decorator.
  *
  * @author Clinton Begin

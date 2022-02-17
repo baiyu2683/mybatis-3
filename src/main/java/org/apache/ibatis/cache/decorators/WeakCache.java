@@ -23,6 +23,9 @@ import java.util.LinkedList;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 弱引用缓存实现，每次jvm进行gc都会回收
+ * 通过WeakReference和ReferenceQueue实现
+ *
  * Weak Reference cache decorator.
  * Thanks to Dr. Heinz Kabutz for his guidance here.
  *

@@ -67,6 +67,8 @@ public class ParamNameResolver {
         continue;
       }
       String name = null;
+      // 取参数名逻辑
+      // 1. 取注解名
       for (Annotation annotation : paramAnnotations[paramIndex]) {
         if (annotation instanceof Param) {
           hasParamAnnotation = true;
@@ -76,12 +78,14 @@ public class ParamNameResolver {
       }
       if (name == null) {
         // @Param was not specified.
+        // 根据反射获得method.getParameters()根据Parameter.getName()获取参数名，需要jvm支持
         if (useActualParamName) {
           name = getActualParamName(method, paramIndex);
         }
         if (name == null) {
           // use the parameter index as the name ("0", "1", ...)
           // gcode issue #71
+          // 按序号赋值名称，0, 1, 2.。。
           name = String.valueOf(map.size());
         }
       }

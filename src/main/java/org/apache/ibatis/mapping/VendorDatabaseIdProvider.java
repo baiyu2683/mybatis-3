@@ -29,6 +29,12 @@ import org.apache.ibatis.logging.LogFactory;
 /**
  * Vendor DatabaseId provider.
  *
+ *一些数据库的厂商名称
+ * SQL Server
+ * DB2
+ * Oracle
+ * MySQL
+ *
  * It returns database product name as a databaseId.
  * If the user provides a properties it uses it to translate database product name
  * key="Microsoft SQL Server", value="ms" will return "ms".

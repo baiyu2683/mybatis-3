@@ -24,6 +24,8 @@ import org.apache.ibatis.binding.MapperProxy.MapperMethodInvoker;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * 每个mapper类型对应一个MapperProxyFactory，用于获得对应代理然后进行方法拦截
+ *
  * @author Lasse Voss
  */
 public class MapperProxyFactory<T> {

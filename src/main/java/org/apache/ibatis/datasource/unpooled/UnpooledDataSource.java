@@ -33,6 +33,8 @@ import javax.sql.DataSource;
 import org.apache.ibatis.io.Resources;
 
 /**
+ * 此DataSource每次根据属性配置重新获取连接
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */

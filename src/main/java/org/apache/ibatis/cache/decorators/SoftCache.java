@@ -23,6 +23,9 @@ import java.util.LinkedList;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 软引用缓存，jvm中软引用只有在内存不足的时候才会回收，内存充足的时候不回收
+ * 这里使用ReferenceQueue结合SoftReference实现
+ *
  * Soft Reference cache decorator
  * Thanks to Dr. Heinz Kabutz for his guidance here.
  *
@@ -59,6 +62,8 @@ public class SoftCache implements Cache {
   @Override
   public void putObject(Object key, Object value) {
     removeGarbageCollectedItems();
+    // 这里使用了带ReferenceQueue的构造函数，当需要被回收时，会被放进queue中
+    // 之后每次进行get和set操作可以从queue中取对应的值然后删除
     delegate.putObject(key, new SoftEntry(key, value, queueOfGarbageCollectedEntries));
   }
 
@@ -69,7 +74,7 @@ public class SoftCache implements Cache {
     SoftReference<Object> softReference = (SoftReference<Object>) delegate.getObject(key);
     if (softReference != null) {
       result = softReference.get();
-      if (result == null) {
+      if (result == null) { // 说明已经被回收了
         delegate.removeObject(key);
       } else {
         // See #586 (and #335) modifications need more than a read lock
@@ -103,6 +108,7 @@ public class SoftCache implements Cache {
 
   private void removeGarbageCollectedItems() {
     SoftEntry sv;
+    // 进入队列的说明被回收了
     while ((sv = (SoftEntry) queueOfGarbageCollectedEntries.poll()) != null) {
       delegate.removeObject(sv.key);
     }

@@ -21,6 +21,8 @@ import java.util.Map;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 最近最少使用
+ *
  * Lru (least recently used) cache decorator.
  *
  * @author Clinton Begin
@@ -46,6 +48,8 @@ public class LruCache implements Cache {
     return delegate.getSize();
   }
 
+  // 自己实现了removeEldestEntry方法，用于移除最先进入的key。
+  // LinkedHashMap的这个方法在调用put完成之后如果返回true会删除首节点，也就是第一个元素
   public void setSize(final int size) {
     keyMap = new LinkedHashMap<Object, Object>(size, .75F, true) {
       private static final long serialVersionUID = 4267176411845948333L;
