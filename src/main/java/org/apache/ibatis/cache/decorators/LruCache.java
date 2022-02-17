@@ -49,8 +49,11 @@ public class LruCache implements Cache {
   }
 
   // 自己实现了removeEldestEntry方法，用于移除最先进入的key。
+  // accessOrder参数表示LinkedHashMap需要保持访问顺序
+  // LinkedHashMap的afterNodeAccess方法会在元素访问之后将元素放到最后
   // LinkedHashMap的这个方法在调用put完成之后如果返回true会删除首节点，也就是第一个元素
   public void setSize(final int size) {
+    // accessOrder为true
     keyMap = new LinkedHashMap<Object, Object>(size, .75F, true) {
       private static final long serialVersionUID = 4267176411845948333L;
 
