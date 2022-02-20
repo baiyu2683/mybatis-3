@@ -688,6 +688,12 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  /**
+   * 执行器包括一个事务管理器和configuration
+   * @param transaction
+   * @param executorType
+   * @return
+   */
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
@@ -699,9 +705,11 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
+    // 有没有开启二级缓存，开启的话进行装饰
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
+    // 对执行器类型进行拦截
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }

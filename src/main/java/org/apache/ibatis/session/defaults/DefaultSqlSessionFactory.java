@@ -42,6 +42,10 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     this.configuration = configuration;
   }
 
+  /**
+   * 获得一个SqlSession
+   * @return
+   */
   @Override
   public SqlSession openSession() {
     return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, false);
@@ -91,9 +95,12 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     Transaction tx = null;
     try {
       final Environment environment = configuration.getEnvironment();
+      // 根据环境变量获得事务工厂, 默认jdbc类型的，自己处理事务，而managed类型的需要框架处理
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      // 创建一个事务，封装了连接操作和事务管理代码
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
       final Executor executor = configuration.newExecutor(tx, execType);
+      // 新建SqlSession实例对象
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
       closeTransaction(tx); // may have fetched a connection so lets call close()
