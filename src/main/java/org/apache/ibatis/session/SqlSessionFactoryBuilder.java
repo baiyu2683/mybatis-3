@@ -88,6 +88,11 @@ public class SqlSessionFactoryBuilder {
     }
   }
 
+  /**
+   * 根据解析出来的config构建一个SqlSession
+   * @param config
+   * @return
+   */
   public SqlSessionFactory build(Configuration config) {
     return new DefaultSqlSessionFactory(config);
   }

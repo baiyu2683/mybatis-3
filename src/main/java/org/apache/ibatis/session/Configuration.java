@@ -1030,6 +1030,13 @@ public class Configuration {
       return this;
     }
 
+    /**
+     * 会将全路径名和简略名称都注册进来
+     * com.zh.Cache 和 Cache
+     * @param key
+     * @param value
+     * @return
+     */
     @Override
     @SuppressWarnings("unchecked")
     public V put(String key, V value) {
