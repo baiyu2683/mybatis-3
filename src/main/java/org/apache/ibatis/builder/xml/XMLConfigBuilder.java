@@ -320,6 +320,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setAutoMappingUnknownColumnBehavior(AutoMappingUnknownColumnBehavior.valueOf(props.getProperty("autoMappingUnknownColumnBehavior", "NONE")));
     configuration.setCacheEnabled(booleanValueOf(props.getProperty("cacheEnabled"), true));
     // 可以配置代理工厂，可以通过这个属性设置默认是jdk动态代理还是别的, 默认有JavassistProxyFactory和CglibProxyFactory
+    // TODO ??
     configuration.setProxyFactory((ProxyFactory) createInstance(props.getProperty("proxyFactory")));
     // 是否延迟加载 TODO ??
     configuration.setLazyLoadingEnabled(booleanValueOf(props.getProperty("lazyLoadingEnabled"), false));
@@ -491,6 +492,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       for (XNode child : parent.getChildren()) {
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
+          // 扫描路径下所有类, 每个class对应一个MapperProxyFactory
           configuration.addMappers(mapperPackage);
         } else {
           // 用resource指定一个mapper文件
@@ -502,6 +504,7 @@ public class XMLConfigBuilder extends BaseBuilder {
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             try(InputStream inputStream = Resources.getResourceAsStream(resource)) {
+              // mapper文件解析
               XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
               mapperParser.parse();
             }

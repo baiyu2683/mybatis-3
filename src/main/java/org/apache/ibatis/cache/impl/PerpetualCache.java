@@ -27,7 +27,7 @@ import org.apache.ibatis.cache.CacheException;
  * @author Clinton Begin
  */
 public class PerpetualCache implements Cache {
-
+  // 这个id初始化的时候传的就是namespace, 也就是对应mapper的全路径名
   private final String id;
 
   private final Map<Object, Object> cache = new HashMap<>();

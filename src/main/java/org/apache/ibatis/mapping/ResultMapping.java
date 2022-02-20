@@ -32,8 +32,10 @@ public class ResultMapping {
 
   private Configuration configuration;
   private String property;
+  ////////////////////////// 这两个标签最重要了
   private String column;
   private Class<?> javaType;
+  //////////////////////////
   private JdbcType jdbcType;
   private TypeHandler<?> typeHandler;
   private String nestedResultMapId;

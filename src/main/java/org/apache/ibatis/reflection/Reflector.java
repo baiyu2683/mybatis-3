@@ -52,12 +52,16 @@ import org.apache.ibatis.util.MapUtil;
 public class Reflector {
 
   private final Class<?> type;
+  // 可读、可写的属性名称
   private final String[] readablePropertyNames;
   private final String[] writablePropertyNames;
+  // get/set方法调用器
   private final Map<String, Invoker> setMethods = new HashMap<>();
   private final Map<String, Invoker> getMethods = new HashMap<>();
+  // get/set方法参数类型
   private final Map<String, Class<?>> setTypes = new HashMap<>();
   private final Map<String, Class<?>> getTypes = new HashMap<>();
+  // 默认构造函数
   private Constructor<?> defaultConstructor;
 
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<>();

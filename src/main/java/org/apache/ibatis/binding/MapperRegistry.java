@@ -59,7 +59,7 @@ public class MapperRegistry {
 
   public <T> void addMapper(Class<T> type) {
     if (type.isInterface()) {
-      if (hasMapper(type)) {
+      if (hasMapper(type)) { // 相同mapper会报错
         throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
       }
       boolean loadCompleted = false;

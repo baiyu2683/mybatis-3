@@ -50,7 +50,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     initNodeHandlerMap();
   }
 
-
+  /**
+   * 每个节点有一个节点处理器
+   */
   private void initNodeHandlerMap() {
     nodeHandlerMap.put("trim", new TrimHandler());
     nodeHandlerMap.put("where", new WhereHandler());
@@ -58,17 +60,20 @@ public class XMLScriptBuilder extends BaseBuilder {
     nodeHandlerMap.put("foreach", new ForEachHandler());
     nodeHandlerMap.put("if", new IfHandler());
     nodeHandlerMap.put("choose", new ChooseHandler());
-    nodeHandlerMap.put("when", new IfHandler());
+    nodeHandlerMap.put("when", new IfHandler()); // when和if一样，都是用IfHandler
     nodeHandlerMap.put("otherwise", new OtherwiseHandler());
     nodeHandlerMap.put("bind", new BindHandler());
   }
 
   public SqlSource parseScriptNode() {
+    // 用脚本解析器解析所有动态sql,转换成对应节点类型
     MixedSqlNode rootSqlNode = parseDynamicTags(context);
     SqlSource sqlSource;
+    // 动态的sql,需要解析变量
     if (isDynamic) {
       sqlSource = new DynamicSqlSource(configuration, rootSqlNode);
     } else {
+      // 不需要解析变量
       sqlSource = new RawSqlSource(configuration, rootSqlNode, parameterType);
     }
     return sqlSource;
@@ -79,6 +84,7 @@ public class XMLScriptBuilder extends BaseBuilder {
     NodeList children = node.getNode().getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
       XNode child = node.newXNode(children.item(i));
+      // 文本节点
       if (child.getNode().getNodeType() == Node.CDATA_SECTION_NODE || child.getNode().getNodeType() == Node.TEXT_NODE) {
         String data = child.getStringBody("");
         TextSqlNode textSqlNode = new TextSqlNode(data);
@@ -89,6 +95,7 @@ public class XMLScriptBuilder extends BaseBuilder {
           contents.add(new StaticTextSqlNode(data));
         }
       } else if (child.getNode().getNodeType() == Node.ELEMENT_NODE) { // issue #628
+        // 其他动态sql节点，trim,where,foreach,if,set,choose,when,otherwish,bind
         String nodeName = child.getNode().getNodeName();
         NodeHandler handler = nodeHandlerMap.get(nodeName);
         if (handler == null) {
@@ -127,9 +134,13 @@ public class XMLScriptBuilder extends BaseBuilder {
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+      // 当前节点所生成sql语句的前缀
       String prefix = nodeToHandle.getStringAttribute("prefix");
+      // 每一个子条件语句是这些内容，要删掉
       String prefixOverrides = nodeToHandle.getStringAttribute("prefixOverrides");
+      // 语句实际后缀
       String suffix = nodeToHandle.getStringAttribute("suffix");
+      // 每一个子语句后缀是这些内容，要删掉
       String suffixOverrides = nodeToHandle.getStringAttribute("suffixOverrides");
       TrimSqlNode trim = new TrimSqlNode(configuration, mixedSqlNode, prefix, prefixOverrides, suffix, suffixOverrides);
       targetContents.add(trim);
@@ -170,12 +181,19 @@ public class XMLScriptBuilder extends BaseBuilder {
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+      // 要遍历的集合的类型
       String collection = nodeToHandle.getStringAttribute("collection");
+      // 是否可空
       Boolean nullable = nodeToHandle.getBooleanAttribute("nullable");
+      // 值，list/array/map都代表值
       String item = nodeToHandle.getStringAttribute("item");
+      // index, list/array代表索引，map代表key
       String index = nodeToHandle.getStringAttribute("index");
+      // 集合元素开头
       String open = nodeToHandle.getStringAttribute("open");
+      // 集合元素结尾
       String close = nodeToHandle.getStringAttribute("close");
+      // 结合元素转成字符串时候的分隔符
       String separator = nodeToHandle.getStringAttribute("separator");
       ForEachSqlNode forEachSqlNode = new ForEachSqlNode(configuration, mixedSqlNode, collection, nullable, index, item, open, close, separator);
       targetContents.add(forEachSqlNode);
@@ -187,9 +205,16 @@ public class XMLScriptBuilder extends BaseBuilder {
       // Prevent Synthetic Access
     }
 
+    /**
+     * 读取test属性定义的条件
+     * @param nodeToHandle
+     * @param targetContents
+     */
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      // 嵌套其他节点
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+      // 读取test属性条件设置
       String test = nodeToHandle.getStringAttribute("test");
       IfSqlNode ifSqlNode = new IfSqlNode(mixedSqlNode, test);
       targetContents.add(ifSqlNode);
@@ -228,9 +253,9 @@ public class XMLScriptBuilder extends BaseBuilder {
       for (XNode child : children) {
         String nodeName = child.getNode().getNodeName();
         NodeHandler handler = nodeHandlerMap.get(nodeName);
-        if (handler instanceof IfHandler) {
+        if (handler instanceof IfHandler) {  // when
           handler.handleNode(child, ifSqlNodes);
-        } else if (handler instanceof OtherwiseHandler) {
+        } else if (handler instanceof OtherwiseHandler) { // otherwise
           handler.handleNode(child, defaultSqlNodes);
         }
       }

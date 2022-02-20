@@ -16,6 +16,8 @@
 package org.apache.ibatis.scripting.xmltags;
 
 /**
+ * 所有节点类型顶级接口
+ *
  * @author Clinton Begin
  */
 public interface SqlNode {

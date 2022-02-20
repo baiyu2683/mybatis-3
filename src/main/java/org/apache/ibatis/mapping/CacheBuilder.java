@@ -128,6 +128,7 @@ public class CacheBuilder {
       if (readWrite) {
         cache = new SerializedCache(cache);
       }
+      // 命中率装饰
       cache = new LoggingCache(cache);
       cache = new SynchronizedCache(cache);
       if (blocking) {
@@ -141,6 +142,7 @@ public class CacheBuilder {
 
   private void setCacheProperties(Cache cache) {
     if (properties != null) {
+      // 获得MetaObject, 方便property属性设置
       MetaObject metaCache = SystemMetaObject.forObject(cache);
       for (Map.Entry<Object, Object> entry : properties.entrySet()) {
         String name = (String) entry.getKey();
