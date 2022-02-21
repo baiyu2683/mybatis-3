@@ -149,7 +149,7 @@ public class DefaultSqlSession implements SqlSession {
     try {
       // 获得mappedstatement
       MappedStatement ms = configuration.getMappedStatement(statement);
-      // 执行器执行
+      // 执行器执行, 集合参数特殊处理，在这一步之前，参数值处理已经完成，并且xml中sql语句解析也完成了，可以获得完整sql语句了
       return executor.query(ms, wrapCollection(parameter), rowBounds, handler);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
@@ -285,6 +285,14 @@ public class DefaultSqlSession implements SqlSession {
     return configuration;
   }
 
+  /**
+   * 获取Mapper入口
+   * 解析xml文件的时候，将每个mapper存到了一个名叫knowsMappers的map中, 每种mapper对应一个MapperProxyFactory
+   * class -> MapperProxyFactory
+   * @param type Mapper interface class
+   * @param <T>
+   * @return
+   */
   @Override
   public <T> T getMapper(Class<T> type) {
     return configuration.getMapper(type, this);

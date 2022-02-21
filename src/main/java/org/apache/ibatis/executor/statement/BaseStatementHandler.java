@@ -65,8 +65,9 @@ public abstract class BaseStatementHandler implements StatementHandler {
     }
 
     this.boundSql = boundSql;
-
+    // 新建参数处理器，并对参数处理器进行增强
     this.parameterHandler = configuration.newParameterHandler(mappedStatement, parameterObject, boundSql);
+    // 新建结果处理器，并对结果处理器进行增强
     this.resultSetHandler = configuration.newResultSetHandler(executor, mappedStatement, rowBounds, parameterHandler, resultHandler, boundSql);
   }
 
@@ -87,7 +88,9 @@ public abstract class BaseStatementHandler implements StatementHandler {
     try {
       // 获得statement
       statement = instantiateStatement(connection);
+      // 设置超时时间
       setStatementTimeout(statement, transactionTimeout);
+      // 设置返回值大小
       setFetchSize(statement);
       return statement;
     } catch (SQLException e) {

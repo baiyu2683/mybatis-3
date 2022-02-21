@@ -31,6 +31,7 @@ import org.apache.ibatis.session.SqlSession;
 public class MapperProxyFactory<T> {
 
   private final Class<T> mapperInterface;
+  // 这个方法调用器缓存所有Mapper共享
   private final Map<Method, MapperMethodInvoker> methodCache = new ConcurrentHashMap<>();
 
   public MapperProxyFactory(Class<T> mapperInterface) {
@@ -51,6 +52,8 @@ public class MapperProxyFactory<T> {
   }
 
   public T newInstance(SqlSession sqlSession) {
+    // 新建一个MapperProxy类型的InvocationHandler, 并使用JDK动态代理创建Mapper的代理返回
+    // 这样当调用Mapper的相关方法时，都会进入MapperProxy的invoke方法
     final MapperProxy<T> mapperProxy = new MapperProxy<>(sqlSession, mapperInterface, methodCache);
     return newInstance(mapperProxy);
   }

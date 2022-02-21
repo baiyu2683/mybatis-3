@@ -62,13 +62,14 @@ public class ParamNameResolver {
     int paramCount = paramAnnotations.length;
     // get names from @Param annotations
     for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
+      // 跳过Rowbounds和ResultHandler参数
       if (isSpecialParameter(paramTypes[paramIndex])) {
         // skip special parameters
         continue;
       }
       String name = null;
       // 取参数名逻辑
-      // 1. 取注解名
+      // 1. 遍历所有注解，取@Param注解定义的参数名
       for (Annotation annotation : paramAnnotations[paramIndex]) {
         if (annotation instanceof Param) {
           hasParamAnnotation = true;
@@ -131,11 +132,15 @@ public class ParamNameResolver {
       Object value = args[names.firstKey()];
       return wrapToMapIfCollection(value, useActualParamName ? names.get(0) : null);
     } else {
+      // 其他参数，也要存两种名字,下面两种形式。由于实际参数名可能没有配置，参数名解析时会被赋值为参数序号，例如第一个参数的参数名为0
+      // 参数名 ->  值
+      // param0 -> 值
       final Map<String, Object> param = new ParamMap<>();
       int i = 0;
       for (Map.Entry<Integer, String> entry : names.entrySet()) {
+        // 将参数名和索引存到param中，例如: 0 -> authorId
         param.put(entry.getValue(), args[entry.getKey()]);
-        // add generic param names (param1, param2, ...)
+        // add generic param names (param1, param2, ...), 如果未使用@Param指定参数名，默认参数名为param1，param2...
         final String genericParamName = GENERIC_NAME_PREFIX + (i + 1);
         // ensure not to overwrite parameter named with @Param
         if (!names.containsValue(genericParamName)) {
@@ -148,6 +153,8 @@ public class ParamNameResolver {
   }
 
   /**
+   * 参数列表中集合类型的增加一个特殊的参数名
+   * 防止出现名字不存在的情况
    * Wrap to a {@link ParamMap} if object is {@link Collection} or array.
    *
    * @param object a parameter object

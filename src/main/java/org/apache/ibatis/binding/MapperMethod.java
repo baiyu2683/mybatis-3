@@ -53,10 +53,18 @@ public class MapperMethod {
   private final MethodSignature method;
 
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
+    // sql命令，封装类型和id
     this.command = new SqlCommand(config, mapperInterface, method);
+    //  方法签名，封装调用方法的参数类型、返回值类型、分页参数、返回值处理器参数等等
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /**
+   * 方法执行
+   * @param sqlSession
+   * @param args
+   * @return
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     switch (command.getType()) {
@@ -81,7 +89,7 @@ public class MapperMethod {
       case SELECT:
         if (method.returnsVoid() && method.hasResultHandler()) {
           executeWithResultHandler(sqlSession, args);
-          result = null;
+          result = null; // 返回值为void,直接返回null
         } else if (method.returnsMany()) {
           result = executeForMany(sqlSession, args);
         } else if (method.returnsMap()) {
@@ -145,6 +153,7 @@ public class MapperMethod {
 
   private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
     List<E> result;
+    // 转换参数，没有参数的话是null,有的话是map
     Object param = method.convertArgsToSqlCommandParam(args);
     if (method.hasRowBounds()) {
       // 取分页参数
@@ -232,17 +241,21 @@ public class MapperMethod {
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
       final String methodName = method.getName();
       final Class<?> declaringClass = method.getDeclaringClass();
+      // 根据接口名+methodName, 也就是namespace+id找到对应的mappedStatement
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
           configuration);
       if (ms == null) {
+        // 被@Flush注解装饰的记录是flush
         if (method.getAnnotation(Flush.class) != null) {
           name = null;
           type = SqlCommandType.FLUSH;
         } else {
+          // 找不到报错
           throw new BindingException("Invalid bound statement (not found): "
               + mapperInterface.getName() + "." + methodName);
         }
       } else {
+        // 记录id和sql类型
         name = ms.getId();
         type = ms.getSqlCommandType();
         if (type == SqlCommandType.UNKNOWN) {
@@ -298,6 +311,7 @@ public class MapperMethod {
       if (resolvedReturnType instanceof Class<?>) {
         this.returnType = (Class<?>) resolvedReturnType;
       } else if (resolvedReturnType instanceof ParameterizedType) {
+        // 范型参数获取原始类型，List<String> -> List
         this.returnType = (Class<?>) ((ParameterizedType) resolvedReturnType).getRawType();
       } else {
         this.returnType = method.getReturnType();
@@ -312,11 +326,14 @@ public class MapperMethod {
       this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);
       // 这里说明可以增加一个ResultHandler参数作为返回值处理参数
       this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
+      // 初始化参数名称解析器
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }
 
     /**
-     * TODO 这个方法需要看一下怎么做的
+     * 1. 无参数，返回null
+     * 2. 只有一个参数且没有注解指定参数名，使用反射会的的参数名，可能不存在，会指定为参数的索引，集合的话还会使用特殊的参数名collection、list、array
+     * 3. 其他参数，如果有参数名，则封装为参数名-值，无参数名，则使用param0-值的形式
      * @param args
      * @return
      */
